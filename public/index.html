@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TikGrab - TikTok Video Downloader (HD, No Watermark, MP3)</title>
+<meta name="description" content="Download TikTok videos in HD without watermark, with watermark, or as MP3 audio. Free and fast.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff7f3;--card:#fff;--ink:#1b1220;--mute:#6f6577;--pink:#ff2d6f;--cyan:#12c8d9;--line:#f0e2e0;--r:20px}
+@media(prefers-color-scheme:dark){:root{--bg:#120c18;--card:#1c1424;--ink:#f6eef8;--mute:#a698b0;--line:#2e2238}}
+*{box-sizing:border-box;margin:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh}
+h1,h2,h3,.logo{font-family:'Bricolage Grotesque',Inter,sans-serif}
+header,main,footer{max-width:820px;margin:auto;padding:0 20px}
+header{display:flex;justify-content:space-between;align-items:center;padding-top:22px;padding-bottom:10px}
+.logo{font-weight:800;font-size:1.5rem;text-shadow:2px 2px 0 var(--cyan),-2px -2px 0 var(--pink)}
+.hero{text-align:center;padding:44px 0 26px}
+h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.1;font-weight:800;letter-spacing:-.02em}
+.hero p{color:var(--mute);margin:14px auto 0;max-width:520px}
+.box{display:flex;gap:10px;background:var(--card);padding:10px;border-radius:999px;border:2px solid var(--line);box-shadow:5px 5px 0 var(--pink);margin-top:30px}
+.box input{flex:1;min-width:0;border:0;background:none;color:var(--ink);font:inherit;padding:0 14px;outline:0}
+button,.btn{font:inherit;font-weight:600;border:0;cursor:pointer;border-radius:999px;padding:12px 22px;background:var(--pink);color:#fff;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+button:disabled{opacity:.6;cursor:wait}
+.err{color:#e0244f;text-align:center;margin-top:16px;font-weight:500}
+.result{display:grid;grid-template-columns:200px 1fr;gap:22px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-top:28px}
+.result img{width:100%;aspect-ratio:9/14;object-fit:cover;border-radius:14px;background:var(--line)}
+.result h3{font-size:1.05rem;margin-bottom:2px;overflow-wrap:anywhere}
+.by{color:var(--mute);font-size:.9rem;margin-bottom:14px}
+.dl{display:flex;flex-direction:column;gap:9px}
+.dl a{justify-content:space-between;border-radius:14px;padding:12px 16px}
+.dl a small{opacity:.85;font-weight:400}
+.dl a.audio{background:var(--cyan);color:#062a2e}
+.dl a.wm{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.ad{margin:22px 0;text-align:center;min-height:0;overflow:hidden}
+.ad:empty{display:none}
+.result video{width:100%;aspect-ratio:9/14;object-fit:cover;border-radius:14px;background:#000}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:50px 0 20px}
+.how div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.how h3{font-size:1rem}.how p{color:var(--mute);font-size:.92rem}
+footer{color:var(--mute);font-size:.85rem;text-align:center;padding:30px 20px 40px}
+.spin{width:16px;height:16px;border:3px solid #fff5;border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+@media(max-width:640px){.result{grid-template-columns:1fr}.result img{max-width:200px;margin:auto}.how{grid-template-columns:1fr}.box{flex-wrap:wrap;border-radius:26px}.box input{flex-basis:100%;padding:10px 14px}.box button{flex:1}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+<header><div class="logo" id="logo">TikGrab</div></header>
+<main>
+  <div class="ad" id="adTop"></div>
+  <section class="hero">
+    <h1>Save any TikTok, clean and in HD</h1>
+    <p>Paste a link. Pick HD, standard, watermark or MP3 audio. No sign-up needed.</p>
+    <form class="box" id="f">
+      <input id="url" type="url" placeholder="https://www.tiktok.com/@user/video/..." aria-label="TikTok link" required>
+      <button type="button" class="ghost" id="paste">Paste</button>
+      <button id="go">Download</button>
+    </form>
+    <div class="err" id="err" role="alert"></div>
+  </section>
+  <div id="out"></div>
+  <div class="ad" id="adBottom"></div>
+  <div class="ad" id="adMid"></div>
+  <section class="how">
+    <div><h3>1. Copy the link</h3><p>In TikTok tap Share, then Copy link.</p></div>
+    <div><h3>2. Paste it here</h3><p>Press Download and wait a moment.</p></div>
+    <div><h3>3. Choose a quality</h3><p>HD, no watermark, with watermark, or MP3.</p></div>
+  </section>
+</main>
+<footer>Sirf apni ya allowed videos download karein. Is site ka TikTok se koi taluq nahi.</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let cfg={};
+function inject(el,html){el.innerHTML=html||'';el.querySelectorAll('script').forEach(o=>{const n=document.createElement('script');[...o.attributes].forEach(a=>n.setAttribute(a.name,a.value));n.text=o.text;o.replaceWith(n)})}
+fetch('/api/public').then(r=>r.json()).then(c=>{cfg=c;$('logo').textContent=c.siteName;inject($('adTop'),c.adTop);inject($('adMid'),c.adMid);inject($('adBottom'),c.adBottom);if(c.maintenance)$('err').textContent='Site maintenance par hai.'});
+$('paste').onclick=async()=>{try{$('url').value=await navigator.clipboard.readText()}catch{$('url').focus()}};
+$('f').onsubmit=async e=>{
+  e.preventDefault();$('err').textContent='';$('out').innerHTML='';
+  const b=$('go');b.disabled=true;b.innerHTML='<span class="spin"></span> Fetching';
+  try{
+    const r=await fetch('/api/fetch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:$('url').value})});
+    const d=await r.json();if(!r.ok)throw new Error(d.error);
+    const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const pv=d.items.find(i=>i.type==='video');
+    const links=d.items.map((i,n)=>`<a class="btn ${i.type==='audio'?'audio':i.note.includes('With')?'wm':''}" href="/api/dl?u=${encodeURIComponent(i.url)}&name=tikgrab_${Date.now()}_${n}.${i.ext}"><span>${i.label}</span><small>${i.note}</small></a>`).join('');
+    $('out').innerHTML=`<div class="result">${pv?`<video controls playsinline preload="metadata" poster="${esc(d.cover)}" src="${esc(pv.url)}" onerror="if(!this.dataset.p){this.dataset.p=1;this.src='/api/dl?inline=1&u='+encodeURIComponent(this.currentSrc||this.src)}"></video>`:`<img referrerpolicy="no-referrer" src="${esc(d.cover)}" alt="">`}<div><h3>${esc(d.title)||'TikTok video'}</h3><div class="by">${esc(d.author)} ${d.duration?'· '+d.duration+'s':''}</div><div class="ad" id="adResult"></div><div class="dl">${links}</div></div></div>`;
+    inject($('adResult'),cfg.adResult);
+  }catch(x){$('err').textContent=x.message}
+  b.disabled=false;b.textContent='Download';
+};
+</script>
+</body>
+</html>

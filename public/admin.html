@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TikGrab Admin</title>
+<style>
+:root{--bg:#f6f3f7;--card:#fff;--ink:#1b1220;--mute:#6f6577;--pink:#ff2d6f;--line:#e8dfe9}
+@media(prefers-color-scheme:dark){:root{--bg:#120c18;--card:#1c1424;--ink:#f6eef8;--mute:#a698b0;--line:#2e2238}}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--ink);display:flex;min-height:100vh}
+nav{width:200px;background:var(--card);border-right:1px solid var(--line);padding:20px 12px;display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+nav b{font-size:1.2rem;padding:0 10px 14px}
+nav button{text-align:left;background:none;border:0;color:var(--ink);padding:10px 12px;border-radius:10px;font:inherit;cursor:pointer}
+nav button.on{background:var(--pink);color:#fff}
+main{flex:1;padding:24px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.stats strong{font-size:1.9rem;display:block}.stats span{color:var(--mute);font-size:.85rem}
+label{display:block;font-size:.85rem;color:var(--mute);margin:14px 0 4px}
+input,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:90px;font-family:monospace;font-size:.85rem}
+.btn{background:var(--pink);color:#fff;border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer;margin-top:16px}
+.btn.g{background:none;color:var(--ink);border:1px solid var(--line)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.85rem}
+td,th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.ok{color:#12a150}.error{color:#e0244f}
+#login{margin:auto;width:min(360px,90vw)}
+.hide{display:none!important}
+@media(max-width:700px){body{flex-direction:column}nav{width:100%;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}nav b{display:none}}
+</style></head><body>
+<div id="login" class="card"><h2>Admin login</h2>
+<label>Username</label><input id="u"><label>Password</label><input id="p" type="password">
+<button class="btn" onclick="login()">Login</button><p id="le" class="error"></p></div>
+
+<nav class="hide" id="nav"><b>TikGrab</b>
+<button data-t="dash" class="on">Dashboard</button><button data-t="api">API</button>
+<button data-t="ads">Ads</button><button data-t="logs">Logs</button><button data-t="site">Site</button>
+<button onclick="localStorage.removeItem('tk');location.reload()">Logout</button></nav>
+
+<main class="hide" id="main">
+<section id="dash"><div class="stats" id="stats"></div></section>
+<section id="api" class="hide"><div class="card"><h3>Download API</h3>
+<label>API URL (video link is appended at the end)</label><input id="apiUrl">
+<label>API key (optional, sent as x-api-key)</label><input id="apiKey">
+<label>Rate limit (requests / minute / IP)</label><input id="rateLimit" type="number">
+<button class="btn" onclick="saveS(['apiUrl','apiKey','rateLimit'])">Save</button></div>
+<p style="color:var(--mute);font-size:.85rem">API response ka format tikwm.com jaisa hona chahiye (data.play, data.hdplay, data.wmplay, data.music).</p></section>
+<section id="ads" class="hide"><div class="card"><h3>Ads (paste HTML / AdSense / script code)</h3>
+<label>Top banner</label><textarea id="adTop"></textarea>
+<label>Inside result (next to download buttons)</label><textarea id="adResult"></textarea>
+<label>Bottom banner</label><textarea id="adBottom"></textarea>
+<label>Middle banner (between input and How-to section)</label><textarea id="adMid"></textarea>
+<button class="btn" onclick="saveS(['adTop','adResult','adMid','adBottom'])">Save ads</button></div></section>
+<section id="logs" class="hide"><div class="card"><div style="display:flex;justify-content:space-between"><h3>Logs</h3><button class="btn g" style="margin:0" onclick="clearLogs()">Clear</button></div>
+<div class="tw"><table id="lt"></table></div></div></section>
+<section id="site" class="hide"><div class="card"><h3>Site</h3>
+<label>Site name</label><input id="siteName">
+<label><input type="checkbox" id="maintenance" style="width:auto"> Maintenance mode</label>
+<button class="btn" onclick="saveS(['siteName','maintenance'])">Save</button></div>
+<div class="card"><h3>Backup (data.json)</h3><p style="color:var(--mute);font-size:.85rem">Vercel par changes temporary hote hain. Settings/logs ka backup download karke project ki data.json se replace karein aur dobara deploy karein.</p>
+<button class="btn g" onclick="exp()">Download data.json</button></div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);async function exp(){const r=await fetch('/admin/export',{headers:{Authorization:'Bearer '+T}});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='data.json';a.click()}let T=localStorage.getItem('tk');
+const api=async(m,u,b)=>{const r=await fetch(u,{method:m,headers:{'Content-Type':'application/json',Authorization:'Bearer '+T},body:b?JSON.stringify(b):undefined});if(r.status===401){localStorage.removeItem('tk');location.reload()}return r.json()};
+async function login(){const r=await fetch('/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:$('u').value,pass:$('p').value})});const d=await r.json();if(!r.ok)return $('le').textContent=d.error;T=d.token;localStorage.setItem('tk',T);init()}
+async function init(){if(!T)return;$('login').classList.add('hide');$('nav').classList.remove('hide');$('main').classList.remove('hide');
+ const s=await api('GET','/admin/settings');for(const k in s){const e=$(k);if(e)e.type==='checkbox'?e.checked=s[k]:e.value=s[k]}
+ const st=await api('GET','/admin/stats');$('stats').innerHTML=[['Total requests',st.total],['Today',st.today],['Errors',st.errors],['Unique users',st.users]].map(x=>`<div><strong>${x[1]}</strong><span>${x[0]}</span></div>`).join('');loadLogs()}
+async function loadLogs(){const l=await api('GET','/admin/logs');const e=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+ $('lt').innerHTML='<tr><th>Time</th><th>IP</th><th>Status</th><th>URL</th><th>Info</th></tr>'+l.map(x=>`<tr><td>${new Date(x.time).toLocaleString()}</td><td>${e(x.ip)}</td><td class="${x.status}">${x.status}</td><td>${e(x.url)}</td><td>${e(x.error||x.title)}</td></tr>`).join('')}
+async function saveS(keys){const b={};keys.forEach(k=>{const e=$(k);b[k]=e.type==='checkbox'?e.checked:e.type==='number'?+e.value:e.value});await api('PUT','/admin/settings',b);alert('Saved')}
+async function clearLogs(){if(confirm('Delete all logs?')){await api('DELETE','/admin/logs');init()}}
+document.querySelectorAll('nav [data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('main section').forEach(s=>s.classList.add('hide'));$(b.dataset.t).classList.remove('hide')});
+init();
+</script></body></html>
